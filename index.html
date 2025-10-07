@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vighnesh Garg | Personal Portfolio</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=Lora:wght@400;500;700&family=Playfair+Display:wght@700;800;900&family=Poppins:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        html {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        :root {
+            /* Safed theme */
+            --font-family-sans: 'Inter', sans-serif;
+            --font-family-serif: 'Lora', serif;
+            --font-family-display: 'Playfair Display', serif;
+
+            --color-bg-body: #f3f4f6;
+            --color-bg-header: rgba(255, 255, 255, 0.8);
+            --color-bg-card: #ffffff;
+            --color-bg-section: #f8fafc;
+            --color-bg-hover: #e5e7eb;
+            --color-bg-subtle: #f3f4f6;
+            --color-bg-button: #4f46e5;
+            --color-bg-button-hover: #4338ca;
+            --color-text-primary: #1f2937;
+            --color-text-secondary: #4b5563;
+            --color-text-subtle: #6b7280;
+            --color-text-button: #ffffff;
+            --color-accent: #4f46e5;
+            --color-border: #e5e7eb;
+            --color-ring: rgba(79, 70, 229, 0.5);
+
+            --color-bg-skillcard-active: #14b8a6; 
+        }
+
+        html.dark {
+
+            /* kala Theme  */
+            --font-family-sans: 'Poppins', sans-serif;
+            
+            --color-bg-body: #111827;
+            --color-bg-header: rgba(17, 24, 39, 0.8);
+            --color-bg-card: #1f2937;
+            --color-bg-section: rgba(31, 41, 55, 0.5);
+            --color-bg-hover: #374151;
+            --color-bg-subtle: #374151;
+            --color-bg-button: #818cf8;
+            --color-bg-button-hover: #6366f1;
+            --color-text-primary: #f9fafb;
+            --color-text-secondary: #d1d5db;
+            --color-text-subtle: #9ca3af;
+            --color-text-button: #ffffff;
+            --color-accent: #818cf8;
+            --color-border: #374151;
+            --color-ring: rgba(129, 140, 248, 0.5);
+
+            --color-bg-skillcard-active: #f59e0b;
+        }
+
+        html.theme-vibe {
+            
+             /* Vibeeee */
+            --font-family-sans: 'Lora', serif;
+
+            --color-bg-body: #DBC2A6;
+            --color-bg-header: rgba(219, 194, 166, 0.8);
+            --color-bg-card: #e3d1be;
+            --color-bg-section: rgba(255, 255, 255, 0.2);
+            --color-bg-hover: rgba(65, 74, 55, 0.1);
+            --color-bg-subtle: rgba(65, 74, 55, 0.1);
+            --color-bg-button: #997A37;
+            --color-bg-button-hover: #8a6d31;
+            --color-text-primary: #414A37;
+            --color-text-secondary: #6a5a3a;
+            --color-text-subtle: #6a5a3a;
+            --color-text-button: #ffffff;
+            --color-accent: #997A37;
+            --color-border: rgba(65, 74, 55, 0.2);
+            --color-ring: rgba(153, 122, 55, 0.5);
+            --color-bg-skillcard-active: var(--color-accent);
+        }
+        
+        body {
+            font-family: var(--font-family-sans);
+        }
+
+        html.theme-vibe h1,
+        html.theme-vibe h2,
+        html.theme-vibe h3 {
+            font-family: var(--font-family-display);
+        }
+
+        .nav-link { position: relative; padding-bottom: 4px; transition: color 0.3s; }
+        .nav-link::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-color: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.4s ease-out; }
+        .nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+        .skill-card-content-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .skill-card.active .skill-card-content-wrapper {
+            max-height: 400px;           /* This is the set max height for skill cards */
+            overflow-y: auto;
+        }
+
+        /* scrollbar */
+
+        .skill-card-content-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+        .skill-card-content-wrapper::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+        .skill-card-content-wrapper::-webkit-scrollbar-thumb {
+            background-color: var(--color-accent);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        .skill-card-content-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: var(--color-bg-button-hover);
+        }
+
+
+        .skill-card.active {
+            background-color: var(--color-bg-skillcard-active);
+            color: var(--color-text-button);
+        }
+        .skill-card.active .text-gray-700 {
+            color: var(--color-text-button);
+            opacity: 0.9;
+        }
+        .skill-card.active .bg-gray-100 {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .skill-card.active .border-gray-200 {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+
+
+</head>
+
+<!-- CSS ENDDD-->
+
+<body class="bg-[var(--color-bg-body)] text-[var(--color-text-primary)] font-sans transition-colors duration-500">
+
+    <header class="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-header)] backdrop-blur-sm shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#hero" class="text-xl font-bold tracking-tight">Vighnesh Garg</a>
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#skills" class="nav-link text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">Skills</a>
+                <a href="#projects" class="nav-link text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">Projects</a>
+                <a href="#about" class="nav-link text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">About Me</a>
+            </nav>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-[var(--color-bg-hover)] transition-colors" aria-label="Toggle theme">
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 pt-24 md:pt-32">
+        <section id="hero" class="flex flex-col md:flex-row items-center justify-between text-center md:text-left py-16 md:py-24">
+            <div class="md:w-3/5">
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
+                    Hi, I'm <span class="text-[var(--color-accent)]">Vighnesh Garg</span>
+                </h1>
+                <h2 class="text-xl md:text-2xl font-medium text-[var(--color-text-secondary)] mb-8">A College student Interested in the Tech WORLD</h2>
+                <p class="max-w-xl mx-auto md:mx-0 text-lg text-[var(--color-text-subtle)] mb-8">A Techie from Mathura ,UP. Trying to be Jack of all till i get the throne worth ruling. Improving by every second. Radhe-Radhe ॐ </p>
+                <div class="flex justify-center md:justify-start space-x-4" id="social-links">
+                </div>
+            </div>
+            <div class="mt-12 md:mt-0 md:w-2/5 flex justify-center">
+                <img src="profpic.jpg" alt="Vighnesh Garg" class="w-64 h-64 md:w-80 md:h-80 rounded-full object-cover shadow-2xl ring-4" style="--tw-ring-color: var(--color-ring)"/>
+            </div>
+        </section>
+
+        <section id="skills" class="py-20 bg-[var(--color-bg-section)] rounded-xl">
+            <h2 class="text-3xl font-bold text-center mb-12">My Skillset</h2>
+            <div id="skills-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="projects" class="py-20">
+            <h2 class="text-3xl font-bold text-center mb-12">My Recent Projects</h2>
+            <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+            <p class="text-center mt-12">
+                <a id="view-all-projects-link" href="#" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] font-semibold hover:underline">
+                    View all projects on GitHub &rarr;
+                </a>
+            </p>
+        </section>
+
+        <section id="about" class="py-20">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">More About Me</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                    <div id="academics-card" class="bg-[var(--color-bg-card)] p-8 rounded-xl shadow-lg">
+                    </div>
+                    <div id="principles-card" class="bg-[var(--color-bg-card)] p-8 rounded-xl shadow-lg">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-6 border-t border-[var(--color-border)]">
+        <p>&copy; 2025 Vighnesh Garg. All rights reserved.</p>
+    </footer>
+
+    <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="modal-content" class="bg-[var(--color-bg-card)] rounded-lg shadow-2xl max-w-lg w-full p-8 relative transform scale-95 transition-all duration-300">
+        </div>
+    </div>
+
+    <script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // JANAM PATRIKA
+    const GITHUB_USERNAME = 'Viggiji';
+
+    const portfolioData = {
+        name: 'Vighnesh Garg',
+        socials: {
+            github: `https://github.com/${GITHUB_USERNAME}`,
+            linkedin: 'https://www.linkedin.com/in/vighnesh-garg-84769726b/',
+            leetcode: 'https://leetcode.com/Viggiji/'
+        },
+        skills: [
+            {
+                id: 'tech',
+                title: 'Tech',
+                iconName: 'code',
+                skills: ['HTML', 'CSS', 'JavaScript', 'Java', 'C++', 'C', 'Python'],
+                learning: ['AI', 'Machine Learning', 'React']
+            },
+            {
+                id: 'hobbies',
+                title: 'Hobbies',
+                iconName: 'heart',
+                skills: ['Football', 'Guitar', 'Beatboxing', 'Watching Anime']
+            },
+            {
+                id: 'non-tech',
+                title: 'Non-Tech',
+                iconName: 'users',
+                skills: ['Communication', 'Teamwork', 'Team Leadership', 'Critical Thinking']
+            }
+        ],
+        education: {
+            school12: 'The Asian School, Dehradun',
+            marks12: '94%',
+            school10: 'St. Dominics Sr. Sec. School, Mathura',
+            marks10: '88%'
+        },
+        principles: [
+            'Improving from failures.',
+            'HardWork + Smartwork.',
+            'Not hurting others for my own good',
+            'न कंचित् शाश्वतम्.'
+        ]
+    };
+
+    const btnTheme = document.getElementById('theme-toggle');
+    const skillsArea = document.getElementById('skills-container');
+    const socialLinks = document.getElementById('social-links');
+    const projectsArea = document.getElementById('projects-container');
+    const academicsBox = document.getElementById('academics-card');
+    const principlesBox = document.getElementById('principles-card');
+    const modal = document.getElementById('project-modal');
+    const modalContent = document.getElementById('modal-content');
+    const viewAllProjects = document.getElementById('view-all-projects-link');
+
+    // --- themes ---
+    const themes = ['light', 'dark', 'vibe'];
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    let lastOpenedSkill = null;
+    let githubProjects = [];
+
+    //  icons
+    const icons = {
+        moon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+        sun: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+        palette: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.477-1.122-.297-.287-.703-.465-1.17-.465-1.97 0-3.57-1.6-3.57-3.57s1.6-3.57 3.57-3.57c.468 0 .875.178 1.17.465.298.287.477.685.477 1.122 0 .942.722 1.688 1.648 1.688 5.5 0 10-4.5 10-10S17.5 2 12 2Z"/></svg>`,
+        github: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/></svg>`,
+        linkedin: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>`,
+        leetcode: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-1.374 1.374v10.82h5.182V1.374A1.374 1.374 0 0 0 16.035 0zm-2.748 0A1.374 1.374 0 0 0 9.36 1.374v5.454H4.178V1.374A1.374 1.374 0 0 0 2.804 0H1.374A1.374 1.374 0 0 0 0 1.374v21.252A1.374 1.374 0 0 0 1.374 24h10.974v-5.455h5.513V24h1.374a1.374 1.374 0 0 0 1.374-1.374V13.591h-5.182v9.035h-5.455V0z"/></svg>`,
+        code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>`,
+        heart: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`,
+        users: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+        gradCap: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`,
+        target: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+        close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+        externalLink: `<svg xmlns="http://www.w3.org/2000/svg" class="ml-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 6"/><path d="M10 14 21 3"/></svg>`
+    };
+
+    function getIcon(name) {
+        return icons[name] || '';
+    }
+
+    // --- socials ---
+    function loadSocialLinks() {
+        socialLinks.innerHTML = '';
+        for (const [key, url] of Object.entries(portfolioData.socials)) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.className = 'text-[var(--color-text-subtle)] hover:text-[var(--color-accent)] transition-colors';
+            a.innerHTML = getIcon(key);
+            socialLinks.appendChild(a);
+        }
+        viewAllProjects.href = `https://github.com/${GITHUB_USERNAME}?tab=repositories`;
+    }
+
+    // --- skills ---
+    function loadSkills() {
+        skillsArea.innerHTML = '';
+        portfolioData.skills.forEach(skill => {
+            const card = document.createElement('div');
+            card.className = 'skill-card bg-[var(--color-bg-card)] cursor-pointer rounded-xl shadow-lg hover:scale-105 transition-all duration-300';
+            card.dataset.skillId = skill.id;
+
+            const header = document.createElement('div');
+            header.className = 'p-6 flex items-center justify-between';
+
+            const h3 = document.createElement('h3');
+            h3.className = 'text-2xl font-bold';
+            h3.textContent = skill.title;
+
+            const iconWrap = document.createElement('div');
+            iconWrap.innerHTML = getIcon(skill.iconName);
+            header.appendChild(h3);
+            if (iconWrap.firstChild) header.appendChild(iconWrap.firstChild);
+
+            const contentWrap = document.createElement('div');
+            contentWrap.className = 'skill-card-content-wrapper';
+            const content = document.createElement('div');
+            content.className = 'px-6 pb-6 pt-4 border-t border-gray-200';
+
+            // main skills
+            const ul = document.createElement('ul');
+            ul.className = 'space-y-2';
+            skill.skills.forEach(s => {
+                const li = document.createElement('li');
+                li.className = 'bg-gray-100 p-2 rounded-md';
+                li.textContent = s;
+                ul.appendChild(li);
+            });
+            content.appendChild(ul);
+
+            // learning part
+            if (skill.learning) {
+                const learnDiv = document.createElement('div');
+                learnDiv.className = 'mt-4';
+                learnDiv.innerHTML = `<h4 class="font-bold text-lg mb-2 text-gray-700">Currently Learning:</h4>`;
+                const learnList = document.createElement('ul');
+                learnList.className = 'space-y-2';
+                skill.learning.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'bg-gray-100 p-2 rounded-md';
+                    li.textContent = item;
+                    learnList.appendChild(li);
+                });
+                learnDiv.appendChild(learnList);
+                content.appendChild(learnDiv);
+            }
+
+            contentWrap.appendChild(content);
+            card.appendChild(header);
+            card.appendChild(contentWrap);
+
+            card.addEventListener('click', skillClick);
+            skillsArea.appendChild(card);
+        });
+    }
+
+    function skillClick(e) {
+        const card = e.currentTarget;
+        if (lastOpenedSkill && lastOpenedSkill !== card) {
+            lastOpenedSkill.classList.remove('active');
+        }
+        card.classList.toggle('active');
+        lastOpenedSkill = card.classList.contains('active') ? card : null;
+    }
+
+    // --- academics / principles ---
+    function loadAboutCards() {
+        academicsBox.innerHTML = `
+            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">${getIcon('gradCap')}Academics</h3>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-semibold text-lg">Class 12th</h4>
+                    <p>${portfolioData.education.school12}</p>
+                    <p class="font-bold text-[var(--color-accent)]">Score: ${portfolioData.education.marks12}</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg">Class 10th</h4>
+                    <p>${portfolioData.education.school10}</p>
+                    <p class="font-bold text-[var(--color-accent)]">Score: ${portfolioData.education.marks10}</p>
+                </div>
+            </div>
+        `;
+
+        principlesBox.innerHTML = `
+            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">${getIcon('target')}My Principles</h3>
+            <ul class="space-y-3 list-disc list-inside text-[var(--color-text-secondary)]">
+                ${portfolioData.principles.map(p => `<li>${p}</li>`).join('')}
+            </ul>
+        `;
+    }
+
+// Uploading github projectsss
+
+    async function loadProjects() {
+        projectsArea.innerHTML = `<p class="text-center md:col-span-3">Fetching projects...</p>`;
+        try {
+            const res = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=3&direction=desc`);
+            if (!res.ok) throw new Error('GitHub fetch failed');
+            githubProjects = await res.json();
+            renderProjects();
+        } catch (err) {
+            console.log('Could not load projects:', err);
+            projectsArea.innerHTML = `<p class="text-center text-red-500 md:col-span-3">Error fetching projects 😞</p>`;
+        }
+    }
+
+    function renderProjects() {
+        if (!githubProjects.length) {
+            projectsArea.innerHTML = `<p class="text-center md:col-span-3">No projects found.</p>`;
+            return;
+        }
+
+        projectsArea.innerHTML = githubProjects.map(p => `
+            <div data-id="${p.id}" class="project-card bg-[var(--color-bg-card)] rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 cursor-pointer">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 truncate">${p.name}</h3>
+                    <p class="text-[var(--color-text-secondary)] text-sm mb-4 h-10 overflow-hidden">${p.description || 'No description'}</p>
+                    <div class="flex items-center justify-between text-sm text-[var(--color-text-subtle)]">
+                        <span>⭐ ${p.stargazers_count}</span>
+                        <span class="font-mono bg-[var(--color-bg-subtle)] px-2 py-1 rounded-md">${p.language || 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('click', openProjectModal);
+        });
+    }
+
+    // --- modal ---
+    function openProjectModal(e) {
+        const id = e.currentTarget.dataset.id;
+        const project = githubProjects.find(p => p.id == id);
+        if (!project) return;
+
+        modalContent.innerHTML = `
+            <button id="close-modal" class="absolute top-4 right-4 text-[var(--color-text-subtle)] hover:text-[var(--color-text-primary)]">${getIcon('close')}</button>
+            <h2 class="text-2xl font-bold mb-4">${project.name}</h2>
+            <p class="text-[var(--color-text-secondary)] mb-6">${project.description || 'No description available'}</p>
+            <div class="flex items-center space-x-6 text-sm mb-6">
+                <span>⭐ ${project.stargazers_count}</span>
+                <span>forks: ${project.forks_count}</span>
+                ${project.language ? `<span class="font-mono bg-[var(--color-bg-subtle)] px-2 py-1 rounded-md">${project.language}</span>` : ''}
+            </div>
+            <a href="${project.html_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-full bg-[var(--color-bg-button)] text-[var(--color-text-button)] font-bold py-3 px-6 rounded-md hover:bg-[var(--color-bg-button-hover)] transition-colors duration-300">
+                View on GitHub ${getIcon('externalLink')}
+            </a>
+        `;
+
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modalContent.classList.remove('scale-95');
+
+        document.getElementById('close-modal').addEventListener('click', closeProjectModal);
+    }
+
+    function closeProjectModal() {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modalContent.classList.add('scale-95');
+    }
+
+    modal.addEventListener('click', e => {
+        if (e.target === modal) closeProjectModal();
+    });
+
+    // --- theme functions ---
+    function applyTheme() {
+        const root = document.documentElement;
+        root.classList.remove('dark', 'theme-vibe');
+
+        if (currentTheme === 'dark') {
+            root.classList.add('dark');
+            btnTheme.innerHTML = getIcon('palette');
+        } else if (currentTheme === 'vibe') {
+            root.classList.add('theme-vibe');
+            btnTheme.innerHTML = getIcon('sun');
+        } else {
+            btnTheme.innerHTML = getIcon('moon');
+        }
+
+        document.body.style.fontFamily = getComputedStyle(root).getPropertyValue('--font-family-sans');
+    }
+
+    function switchTheme() {
+        const idx = themes.indexOf(currentTheme);
+        currentTheme = themes[(idx + 1) % themes.length];
+        localStorage.setItem('theme', currentTheme);
+        applyTheme();
+    }
+
+    // --- init ---
+    function initPortfolio() {
+        applyTheme();
+        loadSocialLinks();
+        loadSkills();
+        loadAboutCards();
+        loadProjects();
+
+        btnTheme.addEventListener('click', switchTheme);
+    }
+
+    // finally run
+    initPortfolio();
+});
+
+    </script>
+</body>
+</html>
