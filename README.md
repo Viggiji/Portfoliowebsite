@@ -7,7 +7,7 @@ This site showcases my skills, projects, and background — dynamically fetching
 
 ## 🚀 Live Preview
 
-🔗 **[Open Live Preview (GitHubBox)](https://githubbox.com/Viggiji/portfolio)**  
+🔗 **[Open Live Preview (GitHubBox)](https://githubbox.com/Viggiji/Portfoliowebsite)**  
 *(If it doesn't load automatically, click “Open in New Window” or wait a few seconds for the preview to initialize.)*
 
 ---
