@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Antigravity AI
+.gemini/
+.antigravityignore
+
+# Tailwind (unused in current build)
+tailwind.config.js
+postcss.config.js
+
+# Old static site (keeping in repo for reference, remove if not needed)
+# old_index.html
