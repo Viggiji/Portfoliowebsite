@@ -1,13 +1,6 @@
 <div align="center">
   <h1>🌐 Vighnesh Garg | Kinetic Architect Portfolio</h1>
   <p>A modern, highly interactive personal portfolio built with <b>React</b>, <b>Three.js</b>, and <b>Framer Motion</b>. Designed to showcase skills, projects, and a personal journey through a dynamic, cinematic experience.</p>
-  
-  <p>
-    <a href="#-features">✨ Features</a> •
-    <a href="#-tech-stack">🛠️ Tech Stack</a> •
-    <a href="#-setup-instructions">🧑‍💻 Setup</a> •
-    <a href="#-customization">🎨 Customization</a>
-  </p>
 </div>
 
 <br />
@@ -15,7 +8,7 @@
 ---
 
 ## 🚀 Live Preview
-🔗 **[Add Your Live URL Here]** *(Once deployed on platforms like Vercel or Netlify)*
+🔗 **[(https://portfoliowebsite-vert-five.vercel.app/)]** 
 
 ---
 
