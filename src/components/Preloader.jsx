@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from './reactbits/CountUp';
 import GradientText from './reactbits/GradientText';
+import CustomCursor from './CustomCursor';
 
 /* ── Tacky boot log data ──────────────────────────────────────────────── */
 const BOOT_LOGS = [
@@ -23,13 +24,6 @@ const randomDate = () => {
   return `${day}.${month}.${year}`;
 };
 
-/* 
-  Preloader Flow:
-  1. Boot logs appear over ~5s (8 logs × 650ms each)
-  2. Progress fills to 100% (CountUp + GradientText)
-  3. Shows "CLICK_ANYWHERE_TO_ENTER" prompt
-  4. Waits for user click → calls onComplete
-*/
 const Preloader = ({ onComplete }) => {
   const [loading,  setLoading]  = useState(0);
   const [logs,     setLogs]     = useState([]);
@@ -39,7 +33,7 @@ const Preloader = ({ onComplete }) => {
   const readyRef                = useRef(false);
   const datesRef                = useRef(BOOT_LOGS.map(() => randomDate()));
 
-  /* Boot sequence — each log appears every 650ms, progress fills */
+  /* Boot sequence */
   useEffect(() => {
     const id = setInterval(() => {
       if (logRef.current < BOOT_LOGS.length) {
@@ -57,21 +51,27 @@ const Preloader = ({ onComplete }) => {
           return next;
         });
       }
-    }, 650);
+    }, 700);
     return () => clearInterval(id);
   }, []);
 
-  /* Handle click anywhere to enter */
-  const handleEnter = () => {
+  /* Handle click — iris-open transition */
+  const [clickOrigin, setClickOrigin] = useState({ x: 50, y: 50 });
+
+  const handleEnter = (e) => {
     if (!ready || exiting) return;
+    // Calculate click position as percentage of viewport
+    const x = e ? (e.clientX / window.innerWidth) * 100 : 50;
+    const y = e ? (e.clientY / window.innerHeight) * 100 : 50;
+    setClickOrigin({ x, y });
     setExiting(true);
-    setTimeout(onComplete, 900);
+    setTimeout(onComplete, 1000);
   };
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.8, ease: 'easeInOut' } }}
+      exit={{ opacity: 0, transition: { duration: 0.1, delay: 0.95 } }}
       onClick={handleEnter}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
@@ -79,15 +79,54 @@ const Preloader = ({ onComplete }) => {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '1.5rem', overflow: 'hidden',
-        cursor: ready ? 'pointer' : 'default',
+        cursor: 'none',
       }}
     >
+      {/* Glow Cursor for preloader */}
+      <CustomCursor mode="glow" />
+
+      {/* ── IRIS-OPEN OVERLAY — expands from click origin ── */}
+      {exiting && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 999,
+            background: 'var(--bg)',
+            pointerEvents: 'none',
+            animation: 'irisExpand 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+            // The clip-path origin is set via CSS custom properties
+            '--ox': `${clickOrigin.x}%`,
+            '--oy': `${clickOrigin.y}%`,
+          }}
+        />
+      )}
+
       {/* Overlays */}
-      <div className="scanline" style={{ position:'fixed', inset:0, zIndex:50, opacity:0.3 }} />
-      <div className="grid-bg"  style={{ position:'fixed', inset:0, zIndex:0,  opacity:0.1 }} />
+      <div
+        className="scanline"
+        style={{
+          position:'fixed', inset:0, zIndex:50,
+          opacity: exiting ? 0 : 0.3,
+          transition: 'opacity 0.3s',
+        }}
+      />
+      <div
+        className="grid-bg"
+        style={{
+          position:'fixed', inset:0, zIndex:0,
+          opacity: exiting ? 0 : 0.1,
+          transition: 'opacity 0.3s',
+        }}
+      />
 
       {/* Logo */}
-      <div style={{ position:'absolute', top:'3rem', left:'3rem', zIndex:10 }}>
+      <div
+        style={{
+          position:'absolute', top:'3rem', left:'3rem', zIndex:10,
+          opacity: exiting ? 0 : 1,
+          transform: exiting ? 'translateY(-20px)' : 'none',
+          transition: 'opacity 0.3s, transform 0.3s',
+        }}
+      >
         <span className="font-headline glow-primary"
           style={{ fontWeight:700, fontSize:'1.2rem', letterSpacing:'-0.05em', color:'var(--primary)' }}>
           VIGHNESH_GARG
@@ -96,11 +135,17 @@ const Preloader = ({ onComplete }) => {
       </div>
 
       {/* Terminal Window */}
-      <div className="glass" style={{
-        width:'100%', maxWidth:900, position:'relative', zIndex:10,
-        borderRadius:4, overflow:'hidden',
-        boxShadow:'0 0 80px rgba(0,240,255,0.05)',
-      }}>
+      <div
+        className="glass"
+        style={{
+          width:'100%', maxWidth:900, position:'relative', zIndex:10,
+          borderRadius:4, overflow:'hidden',
+          boxShadow:'0 0 80px rgba(0,240,255,0.05)',
+          opacity: exiting ? 0 : 1,
+          transform: exiting ? 'scale(0.96) translateY(-20px)' : 'none',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
+        }}
+      >
         {/* Title Bar */}
         <div style={{
           padding:'0.75rem 1.5rem',
@@ -195,13 +240,13 @@ const Preloader = ({ onComplete }) => {
         </div>
       </div>
 
-      {/* ── CLICK TO ENTER prompt (only when ready) ── */}
+      {/* ── CLICK TO ENTER prompt ── */}
       <AnimatePresence>
-        {ready && (
+        {ready && !exiting && (
           <motion.div
             initial={{ opacity:0, y:10 }}
             animate={{ opacity:1, y:0 }}
-            exit={{ opacity:0 }}
+            exit={{ opacity:0, y: -10, transition: { duration: 0.2 } }}
             transition={{ duration:0.5 }}
             style={{ marginTop:40, textAlign:'center', zIndex:10 }}
           >
@@ -226,7 +271,14 @@ const Preloader = ({ onComplete }) => {
       </AnimatePresence>
 
       {/* Bottom Meta */}
-      <div style={{ marginTop:36, display:'flex', alignItems:'center', gap:40, zIndex:10 }}>
+      <div
+        style={{
+          marginTop:36, display:'flex', alignItems:'center', gap:40, zIndex:10,
+          opacity: exiting ? 0 : 1,
+          transform: exiting ? 'translateY(20px)' : 'none',
+          transition: 'opacity 0.3s, transform 0.3s',
+        }}
+      >
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <motion.div
             animate={{ rotate:360 }}
@@ -246,12 +298,17 @@ const Preloader = ({ onComplete }) => {
       </div>
 
       {/* Corner Meta */}
-      <div className="font-mono" style={{
-        position:'absolute', bottom:40, right:48, textAlign:'right',
-        fontSize:'0.58rem', color:'var(--on-surface-dim)', lineHeight:1.9, zIndex:10,
-      }}>
+      <div
+        className="font-mono"
+        style={{
+          position:'absolute', bottom:40, right:48, textAlign:'right',
+          fontSize:'0.58rem', color:'var(--on-surface-dim)', lineHeight:1.9, zIndex:10,
+          opacity: exiting ? 0 : 1,
+          transition: 'opacity 0.3s',
+        }}
+      >
         ARCHITECT_v1.0<br />
-        STABLE_BUILD_2024<br />
+        STABLE_BUILD_2026<br />
         ENCRYPTED_VOICE_LINE_DISABLED
       </div>
     </motion.div>

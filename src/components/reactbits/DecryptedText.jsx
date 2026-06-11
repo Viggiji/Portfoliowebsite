@@ -204,7 +204,7 @@ export default function DecryptedText({
     : animateOn === 'click' ? { onClick: handleClick } : {};
 
   return (
-    <motion.span className={parentClassName} ref={containerRef} style={styles.wrapper} {...animateProps} {...props}>
+    <motion.span className={`decrypted-text-wrapper${parentClassName ? ' ' + parentClassName : ''}`} ref={containerRef} style={{ ...styles.wrapper, cursor: 'none' }} {...animateProps} {...props}>
       <span style={styles.srOnly}>{displayText}</span>
       <span aria-hidden="true">
         {displayText.split('').map((char, index) => {

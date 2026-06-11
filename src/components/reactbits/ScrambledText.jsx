@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 /*
   ScrambledText — React Bits style
@@ -7,6 +7,7 @@ import { useRef, useState, useCallback } from 'react';
   - as="span" (default) → single text, scrambles on hover
   - per="word" → each word individually scrambles on hover
   - per="line" → each sentence (split by '.') individually scrambles on hover
+  - per="proximity" → characters near the mouse cursor scramble on pointermove
 */
 
 const SCRAMBLE_CHARS = '!<>-_\\/[]{}—=+*^?#________';
@@ -77,7 +78,7 @@ function ScrambleWord({ word, speed = 40, style = {}, className = '' }) {
     <span
       ref={setRef}
       className={className}
-      style={{ cursor: 'default', display: 'inline-block', ...style }}
+      style={{ cursor: 'none', display: 'inline-block', ...style }}
       onMouseEnter={scramble}
     >
       {displayText}
@@ -117,16 +118,201 @@ function PerLineScramble({ text, speed = 35, style = {}, className = '', lineSty
   );
 }
 
+/* ── Proximity scramble: chars near cursor scramble in realtime ── */
+/* PERF: Uses cached offsets instead of per-char getBoundingClientRect every frame */
+function PerProximityScramble({
+  text,
+  radius = 100,
+  speed = 40,
+  scrambleChars = '.:!<>-_\\/[]{}—=+*^?#',
+  style = {},
+  className = '',
+}) {
+  const rootRef = useRef(null);
+  const charRefs = useRef([]);
+  const [chars, setChars] = useState(() => text.split(''));
+  const originalChars = useRef(text.split(''));
+  const scrambleTimers = useRef({});
+
+  // Cached character positions (relative to root)
+  const charOffsets = useRef([]); // { cx, cy } relative to viewport — recalculated on scroll/resize
+  const lastCalcTime = useRef(0);
+
+  // Reveal state
+  const [observed, setObserved] = useState(false);
+  const hasRevealed = useRef(false);
+
+  // Throttle ref
+  const lastMoveTime = useRef(0);
+
+  useEffect(() => {
+    originalChars.current = text.split('');
+    setChars(text.split(''));
+  }, [text]);
+
+  // Recalculate cached positions
+  const recalcPositions = useCallback(() => {
+    const spans = charRefs.current;
+    const offsets = [];
+    for (let i = 0; i < spans.length; i++) {
+      const span = spans[i];
+      if (span) {
+        const rect = span.getBoundingClientRect();
+        offsets[i] = { cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2 };
+      }
+    }
+    charOffsets.current = offsets;
+    lastCalcTime.current = Date.now();
+  }, []);
+
+  // Recalc on scroll and resize (passive, debounced)
+  useEffect(() => {
+    let timeout;
+    const debounceRecalc = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(recalcPositions, 100);
+    };
+
+    window.addEventListener('scroll', debounceRecalc, { passive: true });
+    window.addEventListener('resize', debounceRecalc, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', debounceRecalc);
+      window.removeEventListener('resize', debounceRecalc);
+      clearTimeout(timeout);
+    };
+  }, [recalcPositions]);
+
+  // Initial reveal animation
+  const setRootRef = useCallback((node) => {
+    rootRef.current = node;
+    if (node && !observed) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && !hasRevealed.current) {
+            hasRevealed.current = true;
+            setObserved(true);
+            // Initial scramble-in
+            const orig = originalChars.current;
+            let step = 0;
+            const interval = setInterval(() => {
+              if (step <= orig.length) {
+                setChars(
+                  orig.map((c, i) =>
+                    i < step
+                      ? c
+                      : c === ' '
+                      ? ' '
+                      : scrambleChars[Math.floor(Math.random() * scrambleChars.length)]
+                  )
+                );
+                step++;
+              } else {
+                clearInterval(interval);
+                setChars([...orig]);
+                // Calculate positions after reveal
+                requestAnimationFrame(recalcPositions);
+              }
+            }, speed);
+            obs.disconnect();
+          }
+        },
+        { threshold: 0.1 }
+      );
+      obs.observe(node);
+    }
+  }, [observed, speed, scrambleChars, recalcPositions]);
+
+  // Throttled pointer move handler — 50ms throttle
+  const handlePointerMove = useCallback(
+    (e) => {
+      const now = Date.now();
+      if (now - lastMoveTime.current < 50) return; // 50ms throttle
+      lastMoveTime.current = now;
+
+      if (!rootRef.current) return;
+      const orig = originalChars.current;
+      const offsets = charOffsets.current;
+
+      // Recalc if stale (> 2s since last calc)
+      if (now - lastCalcTime.current > 2000) {
+        recalcPositions();
+      }
+
+      if (offsets.length === 0) return;
+
+      const newChars = [...orig];
+      let changed = false;
+
+      for (let i = 0; i < offsets.length; i++) {
+        const off = offsets[i];
+        if (!off || orig[i] === ' ') continue;
+
+        const dx = e.clientX - off.cx;
+        const dy = e.clientY - off.cy;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < radius) {
+          newChars[i] = scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+          changed = true;
+
+          // Resolve timer
+          if (scrambleTimers.current[i]) clearTimeout(scrambleTimers.current[i]);
+          const resolveDelay = Math.floor((dist / radius) * 600) + 100;
+          scrambleTimers.current[i] = setTimeout(() => {
+            setChars((prev) => {
+              const copy = [...prev];
+              copy[i] = orig[i];
+              return copy;
+            });
+            delete scrambleTimers.current[i];
+          }, resolveDelay);
+        }
+      }
+
+      if (changed) setChars(newChars);
+    },
+    [radius, scrambleChars, recalcPositions]
+  );
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(scrambleTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  return (
+    <span
+      ref={setRootRef}
+      className={className}
+      style={{ cursor: 'none', ...style }}
+      onPointerMove={handlePointerMove}
+    >
+      {chars.map((char, i) => (
+        <span
+          key={i}
+          ref={(el) => { charRefs.current[i] = el; }}
+          style={{ display: 'inline-block', whiteSpace: char === ' ' ? 'pre' : 'normal' }}
+        >
+          {char}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 /* ── Main export ── */
 export default function ScrambledText({
   text,
   className = '',
   speed = 50,
-  per = null, // null | 'word' | 'line'
+  per = null, // null | 'word' | 'line' | 'proximity'
   as: Tag = 'span',
   style = {},
   wordStyle = {},
   lineStyle = {},
+  radius = 100,
+  scrambleChars = '.:!<>-_\\/[]{}—=+*^?#',
   ...props
 }) {
   if (per === 'word') {
@@ -134,6 +320,9 @@ export default function ScrambledText({
   }
   if (per === 'line') {
     return <PerLineScramble text={text} speed={speed} style={style} className={className} lineStyle={lineStyle} {...props} />;
+  }
+  if (per === 'proximity') {
+    return <PerProximityScramble text={text} speed={speed} radius={radius} scrambleChars={scrambleChars} style={style} className={className} {...props} />;
   }
 
   // Default: single block scramble on hover
@@ -162,7 +351,7 @@ export default function ScrambledText({
     <Tag
       ref={setNodeRef}
       className={className}
-      style={{ cursor: 'default', ...style }}
+      style={{ cursor: 'none', ...style }}
       onMouseEnter={scramble}
       {...props}
     >
@@ -171,4 +360,5 @@ export default function ScrambledText({
   );
 }
 
-export { ScrambleWord, PerWordScramble, PerLineScramble };
+export { ScrambleWord, PerWordScramble, PerLineScramble, PerProximityScramble };
+

@@ -7,20 +7,29 @@ import { PLAYLIST } from '../data';
  * AudioPlayer
  * Plays songs from PLAYLIST via hidden YouTube iframes.
  * Features: slide-out panel, Counter volume control, next track with loop.
+ *
+ * Autoplay strategy:
+ *  - Default playing=false (UI is honest before player confirms)
+ *  - onStateChange syncs React state with actual YT player state
+ *  - On first user interaction anywhere on the page, attempt playVideo()
+ *    (covers the "click to enter" on Preloader — autoplay policy satisfied)
+ *  - Shows "▶ CLICK TO PLAY" hint if autoplay was blocked
  */
 const AudioPlayer = () => {
-  const iframeRef  = useRef(null);
-  const playerRef  = useRef(null);
-  const [playing,  setPlaying]  = useState(true);
-  const [ready,    setReady]    = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [volume,   setVolume]   = useState(25);
-  const [trackIdx, setTrackIdx] = useState(0);
-  const [visible,  setVisible]  = useState(false);
+  const iframeRef        = useRef(null);
+  const playerRef        = useRef(null);
+  const interactedRef    = useRef(false);   // has user clicked anywhere yet?
+  const [playing,    setPlaying]    = useState(false); // honest default
+  const [ready,      setReady]      = useState(false);
+  const [panelOpen,  setPanelOpen]  = useState(false);
+  const [volume,     setVolume]     = useState(25);
+  const [trackIdx,   setTrackIdx]   = useState(0);
+  const [visible,    setVisible]    = useState(false);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   const currentTrack = PLAYLIST[trackIdx];
 
-  /* Load YouTube iFrame API once */
+  /* ── Load YouTube iFrame API once ─────────────────── */
   useEffect(() => {
     if (window.YT && window.YT.Player) {
       initPlayer();
@@ -33,19 +42,38 @@ const AudioPlayer = () => {
     return () => { window.onYouTubeIframeAPIReady = null; };
   }, []);
 
-  /* Show control after delay */
+  /* ── Show control after delay ──────────────────────── */
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 1500);
     return () => clearTimeout(t);
   }, []);
 
-  /* Update volume when it changes */
+  /* ── Update volume when it changes ────────────────── */
   useEffect(() => {
     if (playerRef.current && ready) {
       playerRef.current.setVolume(volume);
     }
   }, [volume, ready]);
 
+  /* ── First-interaction listener ────────────────────── */
+  /* If autoplay is blocked, the very first click anywhere on the
+     page (including the "CLICK TO ENTER" on Preloader) triggers playback */
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (interactedRef.current) return;
+      interactedRef.current = true;
+      if (playerRef.current && ready) {
+        try {
+          playerRef.current.playVideo();
+        } catch (_) { /* ignore */ }
+      }
+      document.removeEventListener('click', handleFirstInteraction, true);
+    };
+    document.addEventListener('click', handleFirstInteraction, true);
+    return () => document.removeEventListener('click', handleFirstInteraction, true);
+  }, [ready]);
+
+  /* ── Init YouTube Player ───────────────────────────── */
   function initPlayer() {
     playerRef.current = new window.YT.Player(iframeRef.current, {
       videoId: PLAYLIST[0].id,
@@ -54,10 +82,35 @@ const AudioPlayer = () => {
         controls: 0, modestbranding: 1, rel: 0, fs: 0, disablekb: 1,
       },
       events: {
-        onReady: (e) => { e.target.setVolume(25); e.target.playVideo(); setReady(true); },
+        onReady: (e) => {
+          e.target.setVolume(25);
+          e.target.playVideo();
+          setReady(true);
+          /* Check after 800ms if it actually started — if not, autoplay was blocked */
+          setTimeout(() => {
+            try {
+              const state = e.target.getPlayerState();
+              if (state !== window.YT.PlayerState.PLAYING) {
+                setAutoplayBlocked(true);
+                setPlaying(false);
+              }
+            } catch (_) { /* player may not be ready */ }
+          }, 800);
+        },
         onStateChange: (e) => {
-          // When video ends, auto-next
-          if (e.data === window.YT.PlayerState.ENDED) nextTrack();
+          /* Sync React state with actual player state */
+          if (e.data === window.YT.PlayerState.PLAYING) {
+            setPlaying(true);
+            setAutoplayBlocked(false);
+          } else if (
+            e.data === window.YT.PlayerState.PAUSED ||
+            e.data === window.YT.PlayerState.BUFFERING
+          ) {
+            /* Don't set false on BUFFERING — that's transient */
+            if (e.data === window.YT.PlayerState.PAUSED) setPlaying(false);
+          } else if (e.data === window.YT.PlayerState.ENDED) {
+            nextTrack();
+          }
         },
       },
     });
@@ -65,21 +118,22 @@ const AudioPlayer = () => {
 
   const toggle = () => {
     if (!playerRef.current || !ready) return;
-    if (playing) playerRef.current.pauseVideo();
-    else playerRef.current.playVideo();
-    setPlaying(p => !p);
+    if (playing) {
+      playerRef.current.pauseVideo();
+    } else {
+      playerRef.current.playVideo();
+      setAutoplayBlocked(false);
+    }
+    /* Don't toggle state here — let onStateChange sync it */
   };
 
   const nextTrack = () => {
     const nextIdx = (trackIdx + 1) % PLAYLIST.length;
     setTrackIdx(nextIdx);
     if (playerRef.current && ready) {
-      playerRef.current.loadVideoById({
-        videoId: PLAYLIST[nextIdx].id,
-        startSeconds: 0,
-      });
+      playerRef.current.loadVideoById({ videoId: PLAYLIST[nextIdx].id, startSeconds: 0 });
       playerRef.current.setVolume(volume);
-      setPlaying(true);
+      /* playing state will be set by onStateChange when it starts */
     }
   };
 
@@ -124,6 +178,17 @@ const AudioPlayer = () => {
             <div className="font-mono" style={{ fontSize: '0.6rem', color: 'var(--on-surface-dim)', marginBottom: 20 }}>
               {currentTrack.artist}
             </div>
+
+            {/* Autoplay blocked hint */}
+            {autoplayBlocked && (
+              <div className="font-mono" style={{
+                fontSize: '0.55rem', color: 'var(--tertiary)', letterSpacing: '0.1em',
+                marginBottom: 12, padding: '0.4rem 0.6rem',
+                border: '1px solid rgba(101,175,255,0.2)', borderRadius: 2,
+              }}>
+                ▶ Click PLAY to start music
+              </div>
+            )}
 
             {/* Playback controls */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 20, alignItems: 'center' }}>
@@ -212,13 +277,13 @@ const AudioPlayer = () => {
             exit={{ opacity: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             onClick={() => setPanelOpen(p => !p)}
-            title="Music Panel"
+            title={autoplayBlocked ? 'Click to play music' : 'Music Panel'}
             style={{
               position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 999,
               width: 44, height: 44, borderRadius: '50%',
               background: panelOpen ? 'rgba(143,245,255,0.15)' : 'rgba(72,72,71,0.3)',
-              border: `1px solid ${panelOpen ? 'var(--primary)' : 'var(--outline)'}`,
-              color: panelOpen ? 'var(--primary)' : 'var(--on-surface-dim)',
+              border: `1px solid ${panelOpen ? 'var(--primary)' : autoplayBlocked ? 'var(--tertiary)' : 'var(--outline)'}`,
+              color: panelOpen ? 'var(--primary)' : autoplayBlocked ? 'var(--tertiary)' : 'var(--on-surface-dim)',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1rem',
@@ -226,6 +291,7 @@ const AudioPlayer = () => {
               transition: 'all 0.3s',
             }}
           >
+            {/* Pulsing ring — only when actually playing */}
             {playing && (
               <motion.span
                 style={{
@@ -236,7 +302,7 @@ const AudioPlayer = () => {
                 transition={{ repeat: Infinity, duration: 2, ease: 'easeOut' }}
               />
             )}
-            {playing ? '♪' : '♩'}
+            {playing ? '♪' : autoplayBlocked ? '▶' : '♩'}
           </motion.button>
         )}
       </AnimatePresence>
